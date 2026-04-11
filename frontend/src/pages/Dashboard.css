@@ -1,0 +1,85 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.assignments-icon {
+  background-color: rgba(139, 92, 246, 0.15);
+  color: var(--primary-color);
+}
+
+.materials-icon {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--success-color);
+}
+
+.notes-icon {
+  background-color: rgba(236, 72, 153, 0.15);
+  color: var(--secondary-color);
+}
+
+.stat-info h3 {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.recent-activity {
+  margin-top: 24px;
+}
+
+.recent-activity h2 {
+  font-size: 1.25rem;
+  margin-bottom: 16px;
+}
+
+.recent-activity p {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+.activity-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.activity-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: var(--surface-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.text-success {
+  color: var(--success-color);
+}
