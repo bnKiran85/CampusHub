@@ -20,10 +20,19 @@ export default defineConfig({
     // Code splitting for production
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          framer: ['framer-motion'],
-          charts: ['recharts'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'vendor';
+            }
+            if (id.includes('framer-motion')) {
+              return 'framer';
+            }
+            if (id.includes('recharts')) {
+              return 'charts';
+            }
+            return 'libs';
+          }
         },
       },
     },

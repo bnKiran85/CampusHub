@@ -131,7 +131,13 @@ const Login = () => {
 
           <button 
             type="button"
-            onClick={() => window.location.href = 'http://localhost:5000/api/auth/google'}
+            onClick={() => {
+              const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+              // Remove /api if it's already there to point to the base auth route if needed, 
+              // or just use the base URL if configured correctly.
+              const baseUrl = apiBase.replace(/\/api$/, '');
+              window.location.href = `${baseUrl}/api/auth/google`;
+            }}
             className="w-full flex items-center justify-center gap-3 py-2.5 rounded-xl border border-slate-800 bg-white/5 hover:bg-white/10 text-white transition-all font-medium"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
