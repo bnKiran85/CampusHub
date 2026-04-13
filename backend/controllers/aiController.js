@@ -1,6 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const modelName = 'gemini-1.5-flash';
+const modelName = 'gemini-flash-latest';
 const User = require('../models/User');
 
 
@@ -70,8 +70,11 @@ Required JSON schema:
   "summary": "string",
   "points": "string[]",
   "examples": "string[]",
-  "tip": "string"
-}`;
+  "tip": "string",
+  "keyTakeaways": "string[]"
+}
+Say nothing except the JSON object.
+`;
 
     console.log(`Requesting Gemini with prompt length: ${prompt.length}`);
     const result = await model.generateContent({
@@ -111,10 +114,16 @@ Required JSON schema:
 {
   "title": "string",
   "summary": "string",
+  "sections": [
+    { "heading": "Overview", "content": "string" },
+    { "heading": "Key Concepts", "content": "string" },
+    { "heading": "Examples", "content": "string" }
+  ],
   "points": "string[]",
-  "examples": "string[]",
-  "sections": [{"heading": "string", "content": "string"}]
-}`;
+  "tip": "string"
+}
+Say nothing except the JSON object.
+`;
 
     console.log(`Requesting Gemini with prompt length: ${prompt.length}`);
     const result = await model.generateContent({
@@ -300,17 +309,24 @@ Required JSON schema:
 {
   "title": "string",
   "summary": "string",
+  "hint": "string (the main strategy hint to display)",
   "points": "string[]",
-  "examples": "string[]",
   "tip": "string"
-}`;
+}
+Say nothing except the JSON object.
+`;
     console.log(`Requesting Gemini with prompt length: ${prompt.length}`);
     const result = await model.generateContent({
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       ...JSON_CONFIG
     });
     console.log('✅ AI Hint: Response received');
-    res.json(parseAIResponse(result.response.text()));
+    const parsed = parseAIResponse(result.response.text());
+    // Ensure 'hint' exists for Assignments.jsx fallback
+    if (parsed && !parsed.hint && parsed.summary) {
+      parsed.hint = parsed.summary;
+    }
+    res.json(parsed);
   } catch (err) {
     console.error('❌ AI Hint Error:', err.message);
     if (err.stack) console.error(err.stack);

@@ -9,6 +9,7 @@ require('./config/passport'); // Load passport configuration
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
 
 const app = express();
+app.set('trust proxy', 1); // Trust first proxy (Render/Vercel)
 
 
 
