@@ -2,7 +2,9 @@ import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Sparkles, Loader2, CheckCircle, XCircle, RotateCcw, Trophy, ChevronRight } from 'lucide-react';
 import api from '../api/axiosInstance';
+import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+
 
 const DIFFICULTIES = ['easy', 'medium', 'hard'];
 
@@ -16,7 +18,10 @@ const QuizPage = () => {
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
 
+  const { updateUser } = useAuth();
+
   const generateQuiz = async () => {
+
     if (!topic.trim()) { toast.error('Please enter a topic'); return; }
     setLoading(true);
     setQuiz(null);
@@ -53,8 +58,15 @@ const QuizPage = () => {
     const pct = Math.round((s / quiz.length) * 100);
     toast.success(`Quiz complete! ${pct}% 🎯`);
     // Award XP
-    api.post('/ai/quiz-xp', { score: s, total: quiz.length }).catch(() => {});
+    api.post('/ai/quiz-xp', { score: s, total: quiz.length })
+      .then(res => {
+        if (res.data.totalXp) {
+          updateUser({ xp: res.data.totalXp });
+        }
+      })
+      .catch(() => {});
   };
+
 
   const resetQuiz = () => {
     setQuiz(null);

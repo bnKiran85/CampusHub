@@ -186,4 +186,6 @@ module.exports = {
   getUserProfile,
   updateUserProfile,
   getLeaderboard,
+  generateToken,
 };
+

@@ -7,8 +7,11 @@ const userSchema = new mongoose.Schema({
     type: String, required: true, unique: true, lowercase: true,
     match: [/^\S+@\S+\.\S+$/, 'Invalid email address']
   },
-  password: { type: String, required: true, minlength: 6 },
+  password: { type: String, required: false }, // Optional for OAuth users
+  googleId: { type: String, unique: true, sparse: true },
+  provider: { type: String, enum: ['local', 'google'], default: 'local' },
   course: { type: String, default: 'General', trim: true },
+
   role: { type: String, enum: ['student', 'admin', 'faculty'], default: 'student' },
   bookmarks: [{
     contentType: { type: String, enum: ['Note', 'Material'] },

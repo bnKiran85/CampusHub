@@ -13,7 +13,8 @@ const MODES = [
 ];
 
 const FocusMode = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
+
   const [modeIdx, setModeIdx] = useState(0);
   const [timeLeft, setTimeLeft] = useState(MODES[0].duration * 60);
   const [running, setRunning] = useState(false);
@@ -53,8 +54,12 @@ const FocusMode = () => {
       setSessions(s => s + 1);
       toast.success('🎉 Focus session complete! +50 XP');
       try {
-        await api.post('/ai/focus-session', { duration: mode.duration, task });
+        const res = await api.post('/ai/focus-session', { duration: mode.duration, task });
+        if (res.data.totalXp) {
+          updateUser({ xp: res.data.totalXp });
+        }
       } catch { /* silent */ }
+
     } else {
       toast.success('Break time over! Time to focus again 💪');
     }

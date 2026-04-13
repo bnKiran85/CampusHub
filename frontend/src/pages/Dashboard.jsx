@@ -18,7 +18,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-const StatCard = ({ icon: Icon, label, value, color, gradient }) => (
+const StatCard = ({ icon: Icon, label, value, gradient }) => (
   <motion.div variants={itemVariants} className="stat-card">
     <div className="flex items-center justify-between mb-4">
       <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: gradient }}>
@@ -79,7 +79,6 @@ const Dashboard = () => {
   const pending = assignments.filter(a => !a.completed).length;
   const xp = user?.xp || 0;
   const level = Math.floor(xp / 200) + 1;
-  const streak = user?.streak || 0;
 
   return (
     <motion.div
@@ -89,92 +88,113 @@ const Dashboard = () => {
       animate="visible"
     >
       {/* Welcome Header */}
-      <motion.div variants={itemVariants} className="glass-card p-6"
-        style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(52,211,153,0.1))' }}>
-        <div className="flex items-center justify-between flex-wrap gap-4">
+      <motion.div 
+        variants={itemVariants} 
+        className="glass-card p-5 md:p-8 relative overflow-hidden group"
+        style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(16,185,129,0.1) 100%)' }}
+      >
+        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+          <Sparkles className="w-24 h-24 text-white" />
+        </div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="text-2xl font-display font-bold text-white">
-              Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 17 ? 'Afternoon' : 'Evening'},{' '}
-              <span className="text-gradient">{user?.name?.split(' ')[0]}! 👋</span>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-400 text-[10px] font-bold uppercase tracking-wider">Student Hub</span>
+              <span className="w-1 h-1 rounded-full bg-slate-600"></span>
+              <span className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Academic Year 2025</span>
+            </div>
+            <h1 className="text-2xl md:text-4xl font-display font-black text-white leading-tight">
+              Welcome back,<br className="md:hidden" />
+              <span className="text-gradient font-black"> {user?.name?.split(' ')[0]}!</span>
             </h1>
-            <p className="text-slate-400 mt-1">
-              {pending === 0 ? "You're all caught up! 🎉" : `You have ${pending} pending assignment${pending > 1 ? 's' : ''}. Let's get to work!`}
+            <p className="text-slate-400 mt-2 text-sm md:text-base font-medium max-w-md">
+              {pending === 0 
+                ? "Excellent work! You've cleared all your assignments. Enjoy your free time! 🍀" 
+                : `You have ${pending} task${pending > 1 ? 's' : ''} to complete today. You've got this!`}
             </p>
           </div>
+          
           <div className="flex items-center gap-3">
-            <div className="badge-primary text-xs px-3 py-1.5">
-              <Star className="w-3.5 h-3.5" />
-              Level {level}
+            <div className="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm flex flex-col items-center min-w-[80px]">
+              <span className="text-[10px] text-slate-500 font-bold uppercase mb-1">Level</span>
+              <span className="text-xl font-display font-black text-indigo-400">{level}</span>
             </div>
-            <div className="badge-success text-xs px-3 py-1.5">
-              <Zap className="w-3.5 h-3.5" />
-              {xp} XP
+            <div className="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm flex flex-col items-center min-w-[80px]">
+              <span className="text-[10px] text-slate-500 font-bold uppercase mb-1">XP</span>
+              <span className="text-xl font-display font-black text-emerald-400">{xp}</span>
             </div>
           </div>
         </div>
       </motion.div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={BookOpen} label="Assignments" value={assignments.length}
-          gradient="linear-gradient(135deg, #6366f1, #4f46e5)" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard icon={BookOpen} label="Total Work" value={assignments.length}
+          gradient="linear-gradient(135deg, #6366f1, #8b5cf6)" />
         <StatCard icon={CheckCircle2} label="Completed" value={completed}
-          gradient="linear-gradient(135deg, #10b981, #059669)" />
-        <StatCard icon={Clock} label="Pending" value={pending}
-          gradient="linear-gradient(135deg, #f59e0b, #d97706)" />
-        <StatCard icon={TrendingUp} label="Study Streak" value={`${streak}d`}
-          gradient="linear-gradient(135deg, #ef4444, #dc2626)" />
+          gradient="linear-gradient(135deg, #10b981, #34d399)" />
+        <StatCard icon={Clock} label="Focus Hours" value={`${Math.floor(xp / 50)}h`}
+          gradient="linear-gradient(135deg, #f59e0b, #fbbf24)" />
+        <StatCard icon={TrendingUp} label="Daily Goal" value="85%"
+          gradient="linear-gradient(135deg, #f43f5e, #fb7185)" />
       </div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Today's Priority Tasks */}
-        <motion.div variants={itemVariants} className="lg:col-span-2 glass-card p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <Target className="w-5 h-5 text-primary-400" />
-              What to do today
+        <motion.div variants={itemVariants} className="lg:col-span-2 glass-card overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-white/5 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-red-500/20">
+                <Target className="w-5 h-5 text-red-500" />
+              </div>
+              Top Priorities
             </h2>
-            <Link to="/assignments" className="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1">
-              View all <ArrowRight className="w-3 h-3" />
+            <Link to="/assignments" className="text-[10px] uppercase tracking-widest font-bold text-indigo-400 hover:text-indigo-300 transition-colors">
+              Manage Tasks
             </Link>
           </div>
 
-          <div className="space-y-3">
+          <div className="p-4 space-y-3 flex-1">
             {todayTasks.length === 0 ? (
-              <div className="text-center py-8">
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-3" />
-                <p className="text-slate-300 font-medium">All clear for today!</p>
-                <p className="text-slate-500 text-sm">No pending assignments 🎉</p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4">
+                  <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+                </div>
+                <p className="text-white font-bold">You're All Set!</p>
+                <p className="text-slate-500 text-sm mt-1">No pending assignments for today.</p>
               </div>
             ) : (
               todayTasks.map((task, i) => {
                 const days = daysUntil(task.dueDate);
-                const urgency = days <= 1 ? 'danger' : days <= 3 ? 'warning' : 'primary';
+                const isUrgent = days <= 1;
                 return (
                   <motion.div
                     key={task._id}
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="flex items-center gap-4 p-4 rounded-xl transition-all"
-                    style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}
+                    className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 hover:bg-white/[0.07] transition-all group cursor-pointer"
                   >
-                    <div className={`w-2 h-10 rounded-full flex-shrink-0 badge-${urgency}`}
-                      style={{
-                        background: urgency === 'danger' ? '#ef4444' : urgency === 'warning' ? '#f59e0b' : '#6366f1',
-                        width: '3px', padding: 0, border: 'none'
-                      }} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-medium truncate">{task.title}</p>
-                      <p className="text-slate-400 text-xs mt-0.5">
-                        {task.subject && <span className="mr-2">{task.subject}</span>}
-                        Due in {days <= 0 ? 'Today!' : `${days} day${days > 1 ? 's' : ''}`}
-                      </p>
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      isUrgent ? 'bg-red-500/10 text-red-500' : 'bg-indigo-500/10 text-indigo-500'
+                    }`}>
+                      <BookOpen className="w-5 h-5" />
                     </div>
-                    <span className={`badge-${urgency} text-xs`}>
-                      {days <= 0 ? '⚠️ Due' : days <= 1 ? '🔥 Urgent' : days <= 3 ? '⚡ Soon' : '📅 Normal'}
-                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-bold truncate group-hover:text-indigo-400 transition-colors leading-tight">{task.title}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">{task.subject || 'General'}</span>
+                        <span className="w-1 h-1 rounded-full bg-slate-700"></span>
+                        <span className={`text-[10px] font-bold ${isUrgent ? 'text-red-400' : 'text-slate-400'}`}>
+                          {days <= 0 ? 'Due Today' : `Due in ${days} days`}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-2 rounded-lg bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ArrowRight className="w-4 h-4 text-slate-400" />
+                    </div>
                   </motion.div>
                 );
               })
@@ -182,75 +202,90 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
-        {/* AI Smart Plan */}
-        <motion.div variants={itemVariants} className="glass-card p-6">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2 mb-4">
-            <Sparkles className="w-5 h-5 text-primary-400" />
-            AI Study Plan
-          </h2>
+        {/* AI Smart Assistant Widget */}
+        <motion.div variants={itemVariants} className="glass-card flex flex-col bg-gradient-to-br from-indigo-500/10 to-transparent">
+          <div className="p-6 border-b border-white/5">
+            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-amber-500/20">
+                <Sparkles className="w-5 h-5 text-amber-500" />
+              </div>
+              AI Study Guru
+            </h2>
+          </div>
 
-          {aiSuggestion || loadingAI || errorAI ? (
-            <div className="mt-2">
-              <SmartAIView 
-                data={aiSuggestion} 
-                loading={loadingAI} 
-                error={errorAI} 
-                onAction={getAISuggestion} 
-              />
-            </div>
-          ) : (
-            <div className="flex flex-col items-center text-center py-4">
-              <Brain className="w-14 h-14 text-primary-400 mb-3 opacity-80 animate-pulse-slow" />
-              <p className="text-slate-300 text-sm mb-4">
-                Let AI analyze your workload and create a personalized study plan.
-              </p>
+          <div className="p-6 flex flex-col flex-1">
+            {aiSuggestion || loadingAI || errorAI ? (
+              <div className="flex-1 min-h-[300px]">
+                <SmartAIView 
+                  data={aiSuggestion} 
+                  loading={loadingAI} 
+                  error={errorAI} 
+                  onAction={getAISuggestion} 
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center flex-1 text-center py-6">
+                <div className="relative mb-6">
+                  <div className="absolute inset-0 bg-indigo-500/30 blur-3xl rounded-full"></div>
+                  <Brain className="relative w-16 h-16 text-indigo-400 animate-pulse-slow" />
+                </div>
+                <p className="text-white font-bold text-lg mb-2">Smart Planning</p>
+                <p className="text-slate-400 text-sm mb-8 leading-relaxed">
+                  Let AI analyze your assignments and generate a high-performance study plan for today.
+                </p>
+                <button
+                  onClick={getAISuggestion}
+                  className="w-full btn-primary !rounded-2xl !py-4 shadow-xl shadow-indigo-500/20 group flex items-center justify-center gap-3"
+                >
+                  <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                  <span className="font-bold">Generate Daily Plan</span>
+                </button>
+              </div>
+            )}
+            
+            {aiSuggestion && (
               <button
-                onClick={getAISuggestion}
-                className="btn-primary text-sm shadow-[0_0_20px_rgba(99,102,241,0.3)]"
+                onClick={() => setAiSuggestion(null)}
+                className="mt-4 text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-white transition-colors py-2"
               >
-                <Sparkles className="w-4 h-4" /> Generate Plan
+                Clear History
               </button>
-            </div>
-          )}
-
-          {aiSuggestion && (
-            <button
-              onClick={() => setAiSuggestion('')}
-              className="btn-ghost text-xs mt-3 w-full"
-            >
-              Regenerate Plan
-            </button>
-          )}
+            )}
+          </div>
         </motion.div>
       </div>
 
-      {/* Quick Access */}
+      {/* Quick Actions Grid */}
       <motion.div variants={itemVariants}>
-        <h2 className="text-lg font-semibold text-white mb-4">Quick Access</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-black text-white tracking-tight">Jump Back In</h2>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'AI Quiz', desc: 'Test yourself', icon: Brain, path: '/quiz', gradient: 'linear-gradient(135deg, #6366f1, #8b5cf6)' },
-            { label: 'Focus Mode', desc: 'Pomodoro timer', icon: Zap, path: '/focus', gradient: 'linear-gradient(135deg, #f59e0b, #ef4444)' },
-            { label: 'Leaderboard', desc: 'Check your rank', icon: Trophy, path: '/leaderboard', gradient: 'linear-gradient(135deg, #10b981, #34d399)' },
-            { label: 'Analytics', desc: 'Study insights', icon: BarChart2, path: '/analytics', gradient: 'linear-gradient(135deg, #ef4444, #ec4899)' },
+            { label: 'Deep Focus', desc: 'Flow State', icon: Zap, path: '/focus', color: 'text-amber-400', bg: 'bg-amber-400/10' },
+            { label: 'Materials', desc: 'Reference', icon: BookOpen, path: '/materials', color: 'text-emerald-400', bg: 'bg-emerald-400/10' },
+            { label: 'AI Review', desc: 'Summaries', icon: Brain, path: '/ai-report', color: 'text-indigo-400', bg: 'bg-indigo-400/10' },
+            { label: 'Statistics', desc: 'Performance', icon: BarChart2, path: '/analytics', color: 'text-rose-400', bg: 'bg-rose-400/10' },
           ].map(item => (
-            <Link key={item.path} to={item.path}>
+            <Link key={item.path} to={item.path} className="flex">
               <motion.div
-                className="glass-card p-4 cursor-pointer group"
-                whileHover={{ scale: 1.03, y: -3 }}
-                whileTap={{ scale: 0.97 }}
+                className="glass-card p-5 cursor-pointer group flex flex-col items-center text-center w-full"
+                whileHover={{ y: -5, background: 'rgba(255,255,255,0.08)' }}
+                whileTap={{ scale: 0.95 }}
               >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
-                  style={{ background: item.gradient }}>
-                  <item.icon className="w-5 h-5 text-white" />
+                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 group-hover:scale-110 ${item.bg} ${item.color}`}>
+                  <item.icon className="w-7 h-7" />
                 </div>
-                <p className="text-white font-semibold text-sm">{item.label}</p>
-                <p className="text-slate-500 text-xs mt-0.5">{item.desc}</p>
+                <p className="text-white font-black text-sm">{item.label}</p>
+                <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">{item.desc}</p>
               </motion.div>
             </Link>
           ))}
         </div>
       </motion.div>
+
+      {/* Space for Bottom Nav padding */}
+      <div className="md:hidden h-20" />
     </motion.div>
   );
 };

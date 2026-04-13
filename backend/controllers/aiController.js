@@ -1,6 +1,8 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const modelName = 'gemini-flash-latest';
+const User = require('../models/User');
+
 
 // Helper to clean and parse AI JSON responses
 const parseAIResponse = (text) => {
@@ -353,11 +355,20 @@ Required JSON schema:
 const focusSession = async (req, res) => {
   const { duration } = req.body;
   try {
-    const User = require('../models/User');
     const xpAwarded = Math.round(duration * 2);
-    await User.findByIdAndUpdate(req.user._id, { $inc: { xp: xpAwarded } });
-    res.json({ message: 'XP awarded!', xpAwarded, title: 'Focus Complete' });
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id, 
+      { $inc: { xp: xpAwarded } },
+      { new: true }
+    );
+    res.json({ 
+      message: 'XP awarded!', 
+      xpAwarded, 
+      totalXp: updatedUser.xp,
+      title: 'Focus Complete' 
+    });
   } catch (err) {
+
     console.error('❌ XP Error:', err.message);
     if (err.stack) console.error(err.stack);
     res.status(500).json({ message: 'XP error' });
@@ -367,11 +378,19 @@ const focusSession = async (req, res) => {
 const quizXP = async (req, res) => {
   const { score, total } = req.body;
   try {
-    const User = require('../models/User');
     const xpAwarded = Math.round((score / total) * 30) + 5;
-    await User.findByIdAndUpdate(req.user._id, { $inc: { xp: xpAwarded } });
-    res.json({ message: 'XP awarded!', xpAwarded });
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id, 
+      { $inc: { xp: xpAwarded } },
+      { new: true }
+    );
+    res.json({ 
+      message: 'XP awarded!', 
+      xpAwarded,
+      totalXp: updatedUser.xp 
+    });
   } catch (err) {
+
     console.error('❌ XP Error:', err.message);
     if (err.stack) console.error(err.stack);
     res.status(500).json({ message: 'XP error' });
@@ -412,8 +431,106 @@ Required JSON schema:
   }
 };
 
+// @desc    Generate a complete performance report
+// @route   POST /api/ai/report
+const generateReport = async (req, res) => {
+  const { subject } = req.body;
+  if (!subject) return res.status(400).json({ message: 'Subject is required' });
+
+  try {
+
+    const Note = require('../models/Note');
+    const Assignment = require('../models/Assignment');
+    const AIReport = require('../models/AIReport');
+
+    // 1. Fetch User Data
+    const user = await User.findById(req.user._id);
+    const noteCount = await Note.countDocuments({ user: req.user._id });
+    const assignmentCount = await Assignment.countDocuments({ user: req.user._id });
+    const completedAssignments = await Assignment.countDocuments({ user: req.user._id, completed: true });
+
+    // 2. Prepare Data Snapshot for AI
+    const dataSnapshot = {
+      xp: user.xp || 0,
+      streak: user.streak || 0,
+      noteCount,
+      assignmentCount,
+      completedAssignments,
+      course: user.course || 'General'
+    };
+
+    console.log(`🤖 AI Report: Generating for ${user.name} on ${subject}`);
+    const model = genAI.getGenerativeModel({ model: modelName });
+
+    const prompt = `${SYSTEM_PROMPT}
+Task: Generate a comprehensive, professional academic performance report for a student.
+Student Metadata: ${JSON.stringify(dataSnapshot)}
+Subject of Focus: "${subject}"
+
+The report should be encouraging but honest. Analyze their activity:
+- High note count suggests good documentation habits.
+- XP and streak show consistency.
+- Completed assignments vs total shows reliability.
+
+Required JSON schema:
+{
+  "summary": "string (2-3 sentences)",
+  "strengths": "string[]",
+  "weaknesses": "string[]",
+  "recommendations": "string[]",
+  "study_plan": [
+    { "day": "string", "tasks": "string[]" }
+  ],
+  "performance_score": "number (0-100)"
+}`;
+
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      ...JSON_CONFIG
+    });
+
+    const aiData = parseAIResponse(result.response.text());
+
+    // 3. Save to History
+    const newReport = await AIReport.create({
+      user: req.user._id,
+      subject,
+      summary: aiData.summary,
+      strengths: aiData.strengths,
+      weaknesses: aiData.weaknesses,
+      recommendations: aiData.recommendations,
+      studyPlan: aiData.study_plan,
+      performanceScore: aiData.performance_score,
+      dataSnapshot
+    });
+
+    res.status(201).json(newReport);
+  } catch (err) {
+    console.error('❌ AI Report Error:', err.message);
+    res.status(500).json({ 
+      message: 'Report generation failed', 
+      error: err.message,
+      suggestion: 'Ensure your data (notes/assignments) is available for analysis.'
+    });
+  }
+};
+
+// @desc    Get report history
+// @route   GET /api/ai/reports
+const getReports = async (req, res) => {
+  try {
+    const AIReport = require('../models/AIReport');
+    const reports = await AIReport.find({ user: req.user._id }).sort({ createdAt: -1 });
+    res.json(reports);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch reports' });
+  }
+};
+
 module.exports = { 
   chat, enhanceNote, generateQuiz, explainMaterial, 
   studyPlan, focusSession, quizXP, summarize,
-  semanticSearch, assignmentHint, studySchedule
+  semanticSearch, assignmentHint, studySchedule,
+  generateReport, getReports
 };
+

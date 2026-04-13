@@ -76,11 +76,18 @@ export default {
       backdropBlur: {
         xs: '2px',
       },
+      borderRadius: {
+        '2xl': '1.25rem',
+        '3xl': '1.75rem',
+        '4xl': '2.5rem',
+      },
       boxShadow: {
         'glass': '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
         'glass-hover': '0 16px 48px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.15)',
         'neon': '0 0 20px rgba(99, 102, 241, 0.5)',
         'neon-green': '0 0 20px rgba(52, 211, 153, 0.5)',
+        'premium': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255,255,255,0.05)',
+        'inner-light': 'inset 0 1px 0 rgba(255, 255, 255, 0.05)',
       }
     },
   },

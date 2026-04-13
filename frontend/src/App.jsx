@@ -20,7 +20,11 @@ const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const Analytics = lazy(() => import('./pages/Analytics'));
 const StudyPlanner = lazy(() => import('./pages/StudyPlanner'));
 const Feed = lazy(() => import('./pages/Feed'));
+const AIReportGenerator = lazy(() => import('./pages/AIReportGenerator'));
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const OAuthSuccess = lazy(() => import('./pages/OAuthSuccess'));
+
+
 
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -61,6 +65,8 @@ function App() {
             {/* Auth Routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/oauth/success" element={<OAuthSuccess />} />
+
 
             {/* Protected App Routes */}
             <Route element={<ProtectedRoute />}>
@@ -75,7 +81,9 @@ function App() {
                 <Route path="/leaderboard" element={<Leaderboard />} />
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/planner" element={<StudyPlanner />} />
+                <Route path="/ai-report" element={<AIReportGenerator />} />
                 <Route path="/admin" element={<AdminDashboard />} />
+
               </Route>
               <Route path="/focus" element={<FocusMode />} />
             </Route>

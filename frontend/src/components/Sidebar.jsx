@@ -18,8 +18,10 @@ const navItems = [
   { path: '/discussion', label: 'Discussion', icon: MessageSquare },
   { path: '/focus', label: 'Focus Mode', icon: Zap },
   { path: '/analytics', label: 'Analytics', icon: BarChart2 },
+  { path: '/ai-report', label: 'AI Report', icon: FileText, premium: true },
   { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
 ];
+
 
 const adminItems = [
   { path: '/admin', label: 'Moderation', icon: Star },

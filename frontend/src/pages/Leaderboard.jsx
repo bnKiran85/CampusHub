@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+
 import { motion } from 'framer-motion';
-import { Trophy, Medal, Crown, Star, TrendingUp } from 'lucide-react';
+import { Trophy, Medal, Crown, Star, TrendingUp, RefreshCw } from 'lucide-react';
+
 import api from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
 
@@ -16,15 +18,28 @@ const Leaderboard = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await api.get('/auth/leaderboard');
-        setUsers(data);
-      } catch { setUsers([]); }
-      finally { setLoading(false); }
-    })();
+  const fetchLeaderboard = useCallback(async (isSilent = false) => {
+    if (!isSilent) setLoading(true);
+    try {
+      const { data } = await api.get('/auth/leaderboard');
+      setUsers(data);
+    } catch { 
+      if (!isSilent) setUsers([]); 
+    }
+    finally { if (!isSilent) setLoading(false); }
   }, []);
+
+  useEffect(() => {
+    fetchLeaderboard();
+    
+    // Auto-refresh every 60 seconds
+    const interval = setInterval(() => {
+      fetchLeaderboard(true);
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [fetchLeaderboard]);
+
 
   const topThree = users.slice(0, 3);
   const rest = users.slice(3);
@@ -32,12 +47,23 @@ const Leaderboard = () => {
 
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
-      <div>
-        <h1 className="section-title mb-1 flex items-center gap-2">
-          <Trophy className="w-7 h-7 text-yellow-400" /> Leaderboard
-        </h1>
-        <p className="text-slate-400 text-sm">Top students ranked by XP earned</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="section-title mb-1 flex items-center gap-2">
+            <Trophy className="w-7 h-7 text-yellow-400" /> Leaderboard
+          </h1>
+          <p className="text-slate-400 text-sm">Top students ranked by XP earned</p>
+        </div>
+        <button 
+          onClick={() => fetchLeaderboard()} 
+          disabled={loading}
+          className="glass-btn p-2 text-slate-400 hover:text-white transition-colors"
+          title="Refresh rankings"
+        >
+          <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+        </button>
       </div>
+
 
       {/* Podium */}
       {!loading && topThree.length >= 3 && (

@@ -4,7 +4,8 @@ const { protect } = require('../middleware/auth');
 const {
   chat, summarize, generateQuiz, assignmentHint,
   studyPlan, studySchedule, focusSession, quizXP,
-  enhanceNote, explainMaterial, semanticSearch
+  enhanceNote, explainMaterial, semanticSearch,
+  generateReport, getReports
 } = require('../controllers/aiController');
 
 router.post('/chat', protect, chat);
@@ -18,5 +19,8 @@ router.post('/quiz-xp', protect, quizXP);
 router.post('/enhance-note', protect, enhanceNote);
 router.post('/explain-material', protect, explainMaterial);
 router.post('/semantic-search', protect, semanticSearch);
+router.post('/report', protect, generateReport);
+router.get('/reports', protect, getReports);
 
 module.exports = router;
+

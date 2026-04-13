@@ -4,9 +4,13 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
+const passport = require('passport');
+require('./config/passport'); // Load passport configuration
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
 
 const app = express();
+
+
 
 // Security middlewares
 app.use(helmet());
@@ -33,6 +37,8 @@ const aiLimiter = rateLimit({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize());
+
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
