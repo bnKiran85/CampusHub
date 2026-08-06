@@ -66,7 +66,14 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 
 // Health check
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'CampusHub API is running 🚀', timestamp: new Date() });
+  const mongoose = require('mongoose');
+  const dbStateMap = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+  res.json({
+    status: 'ok',
+    database: dbStateMap[mongoose.connection.readyState] || 'unknown',
+    message: 'CampusHub API is running 🚀',
+    timestamp: new Date()
+  });
 });
 
 app.get('/', (req, res) => {
@@ -77,23 +84,15 @@ app.get('/', (req, res) => {
 app.use(notFound);
 app.use(errorHandler);
 
-// Connect to MongoDB & Start Server
-const startServer = async () => {
-  try {
-    await connectDB();
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-      console.log(`\n🚀 CampusHub Server running on port ${PORT}`);
-      console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🤖 AI Configuration: ${process.env.GEMINI_API_KEY ? 'ACTIVE ✅' : 'MISSING GEMINI_API_KEY ❌'}`);
-      if (!process.env.GEMINI_API_KEY) {
-        console.warn('⚠️  WARINING: AI features will fail until a valid API key is added to .env');
-      }
-    });
-  } catch (error) {
-    console.error('❌ Failed to start server:', error.message);
-    process.exit(1);
+// Start Server & Connect to MongoDB
+const PORT = process.env.PORT || 5000;
+const server = app.listen(PORT, '0.0.0.0', async () => {
+  console.log(`\n🚀 CampusHub Server successfully bound & running on 0.0.0.0:${PORT}`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🤖 AI Configuration: ${process.env.GEMINI_API_KEY ? 'ACTIVE ✅' : 'MISSING GEMINI_API_KEY ❌'}`);
+  if (!process.env.GEMINI_API_KEY) {
+    console.warn('⚠️  WARNING: AI features will fail until a valid GEMINI_API_KEY is added.');
   }
-};
-
-startServer();
+  // Connect to MongoDB asynchronously after port is opened
+  await connectDB();
+});
