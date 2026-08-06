@@ -48,6 +48,7 @@ userSchema.methods.toPublicJSON = function () {
   return obj;
 };
 
-userSchema.index({ xp: -1 }); // For leaderboard queries
+userSchema.index({ isStatsPublic: 1, xp: -1 }); // Optimized for public leaderboard queries
+userSchema.index({ xp: -1 }); // Fallback index for general sorting
 
 module.exports = mongoose.model('User', userSchema);

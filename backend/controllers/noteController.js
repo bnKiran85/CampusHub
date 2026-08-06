@@ -62,6 +62,13 @@ const createNote = async (req, res) => {
       status: visibility === 'public' ? 'pending' : 'approved',
       user: req.user._id 
     });
+
+    // Gamification: Award XP for creating notes
+    const User = require('../models/User');
+    await User.findByIdAndUpdate(req.user._id, { 
+      $inc: { xp: 15, 'contributionStats.totalUploads': 1 } 
+    });
+
     res.status(201).json(note);
   } catch (err) {
     res.status(500).json({ message: 'Failed to create note', error: err.message });

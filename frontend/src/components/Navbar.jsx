@@ -80,6 +80,11 @@ const Navbar = () => {
 
       {/* Actions Section */}
       <div className="flex items-center gap-2 md:gap-4">
+        {/* Streak Visual */}
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 font-bold text-xs" title="Current Daily Streak">
+          🔥 {user?.streak || 0}
+        </div>
+
         {/* Quick Focus Button - Desktop only */}
         <motion.button
           onClick={() => navigate('/focus')}

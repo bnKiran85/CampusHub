@@ -8,6 +8,9 @@ const {
   generateReport, getReports
 } = require('../controllers/aiController');
 
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+
 router.post('/chat', protect, chat);
 router.post('/summarize', protect, summarize);
 router.post('/quiz', protect, generateQuiz);
@@ -21,6 +24,7 @@ router.post('/explain-material', protect, explainMaterial);
 router.post('/semantic-search', protect, semanticSearch);
 router.post('/report', protect, generateReport);
 router.get('/reports', protect, getReports);
+router.post('/upload-pdf', protect, upload.single('document'), require('../controllers/aiController').uploadAndExplainPdf);
 
 module.exports = router;
 

@@ -1,7 +1,35 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const modelName = 'gemini-flash-latest';
+const modelName = 'gemini-1.5-flash';
 const User = require('../models/User');
+const pdfParse = require('pdf-parse');
+
+// Simple in-memory cache for AI responses to handle duplicate requests quickly
+const aiCache = new Map();
+const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+
+// Helper to check cache
+const getCachedResponse = (promptKey) => {
+  if (aiCache.has(promptKey)) {
+    const cached = aiCache.get(promptKey);
+    if (Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log('⚡ Returning cached AI response');
+      return cached.data;
+    }
+    aiCache.delete(promptKey);
+  }
+  return null;
+};
+
+const MAX_CACHE_SIZE = 500;
+
+const setCachedResponse = (promptKey, data) => {
+  if (aiCache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = aiCache.keys().next().value;
+    if (oldestKey) aiCache.delete(oldestKey);
+  }
+  aiCache.set(promptKey, { data, timestamp: Date.now() });
+};
 
 
 // Helper to clean and parse AI JSON responses
@@ -146,6 +174,10 @@ const generateQuiz = async (req, res) => {
   if (!topic) return res.status(400).json({ message: 'Topic/Content is required' });
 
   try {
+    const cacheKey = `quiz_${topic}_${difficulty}_${count}`;
+    const cached = getCachedResponse(cacheKey);
+    if (cached) return res.json(parseAIResponse(cached));
+
     console.log(`🤖 AI Quiz: Generating ${count} questions on "${topic}"`);
     const model = genAI.getGenerativeModel({ model: modelName });
     const prompt = `${SYSTEM_PROMPT}
@@ -172,7 +204,9 @@ Required JSON schema:
       ...JSON_CONFIG
     });
     console.log('✅ AI Quiz: Response received');
-    res.json(parseAIResponse(result.response.text()));
+    const output = result.response.text();
+    setCachedResponse(cacheKey, output);
+    res.json(parseAIResponse(output));
   } catch (err) {
     console.error('❌ AI Quiz Error:', err.message);
     if (err.stack) console.error(err.stack);
@@ -187,6 +221,10 @@ const explainMaterial = async (req, res) => {
   if (!content) return res.status(400).json({ message: 'Content is required' });
 
   try {
+    const cacheKey = `explain_${title}_${content.substring(0, 50)}`;
+    const cached = getCachedResponse(cacheKey);
+    if (cached) return res.json(parseAIResponse(cached));
+
     console.log(`🤖 AI Explain: Analyzing ${type} "${title}"`);
     const model = genAI.getGenerativeModel({ model: modelName });
     const prompt = `${SYSTEM_PROMPT}
@@ -209,7 +247,9 @@ Required JSON schema:
       ...JSON_CONFIG
     });
     console.log('✅ AI Explain: Response received');
-    res.json(parseAIResponse(result.response.text()));
+    const output = result.response.text();
+    setCachedResponse(cacheKey, output);
+    res.json(parseAIResponse(output));
   } catch (err) {
     console.error('❌ AI Explain Error:', err.message);
     if (err.stack) console.error(err.stack);
@@ -543,10 +583,49 @@ const getReports = async (req, res) => {
   }
 };
 
+// @desc    Upload PDF and Explain
+// @route   POST /api/ai/upload-pdf
+const uploadAndExplainPdf = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No document uploaded' });
+    }
+
+    console.log('🤖 AI Explain: Parsing PDF...');
+    const pdfData = await pdfParse(req.file.buffer);
+    const textContent = pdfData.text.substring(0, 15000);
+
+    console.log(`🤖 AI Explain: Analyzing Document "${req.file.originalname}"`);
+    const model = genAI.getGenerativeModel({ model: modelName });
+    const prompt = `${SYSTEM_PROMPT}
+Task: Analyze this document titled "${req.file.originalname}" and break it down for a student.
+Content: "${textContent}"
+
+Required JSON schema:
+{
+  "title": "string",
+  "summary": "string",
+  "points": "string[]",
+  "examples": "string[]",
+  "difficultyLevel": "string",
+  "examFocus": "string[]"
+}`;
+
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      ...JSON_CONFIG
+    });
+    console.log('✅ AI Explain: Response received');
+    res.json(parseAIResponse(result.response.text()));
+  } catch (err) {
+    console.error('❌ AI Upload Error:', err.message);
+    res.status(500).json({ message: 'AI PDF Explanation failed', error: err.message });
+  }
+};
+
 module.exports = { 
   chat, enhanceNote, generateQuiz, explainMaterial, 
   studyPlan, focusSession, quizXP, summarize,
   semanticSearch, assignmentHint, studySchedule,
-  generateReport, getReports
+  generateReport, getReports, uploadAndExplainPdf
 };
-

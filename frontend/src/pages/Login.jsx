@@ -132,9 +132,8 @@ const Login = () => {
           <button 
             type="button"
             onClick={() => {
-              const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-              // Remove /api if it's already there to point to the base auth route if needed, 
-              // or just use the base URL if configured correctly.
+              const apiBase = import.meta.env.VITE_API_URL;
+              // Remove /api if it's already there to point to the base auth route if needed
               const baseUrl = apiBase.replace(/\/api$/, '');
               window.location.href = `${baseUrl}/api/auth/google`;
             }}

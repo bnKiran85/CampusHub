@@ -82,6 +82,13 @@ const createMaterial = async (req, res) => {
       visibility: visibility || 'public',
       status: isFacultyOrAdmin ? 'approved' : 'pending'
     });
+
+    // Gamification: Award XP for uploading materials
+    const User = require('../models/User');
+    await User.findByIdAndUpdate(req.user._id, { 
+      $inc: { xp: 20, 'contributionStats.totalUploads': 1 } 
+    });
+
     res.status(201).json(material);
   } catch (err) {
     res.status(500).json({ message: 'Failed to add material', error: err.message });

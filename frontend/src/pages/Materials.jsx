@@ -145,6 +145,46 @@ const Materials = () => {
           )}
         </AnimatePresence>
 
+        {/* AI PDF Upload Feature */}
+        <div className="glass-card p-6 flex flex-col md:flex-row items-center gap-6 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border-indigo-500/20">
+          <div className="flex-1 space-y-2">
+            <h3 className="text-white font-bold flex items-center gap-2">
+              <Brain className="w-5 h-5 text-indigo-400" /> AI Document Explainer
+            </h3>
+            <p className="text-sm text-slate-400">Upload any PDF document (up to 10MB) and let CampusHub AI break it down, summarize key points, and suggest practice questions.</p>
+          </div>
+          <div>
+            <label className="btn-primary cursor-pointer border border-indigo-500/50 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300">
+              <input type="file" className="hidden" accept=".pdf" onChange={async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (file.size > 10 * 1024 * 1024) return toast.error('File size must be less than 10MB');
+                
+                setIsExplaining(true);
+                setExplainingMaterial({ title: file.name, category: 'pdf' });
+                setErrorAI(null);
+                setAiExplanation(null);
+                
+                const formData = new FormData();
+                formData.append('document', file);
+                
+                try {
+                  const { data } = await api.post('/ai/upload-pdf', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                  });
+                  setAiExplanation(data);
+                } catch (err) {
+                  setErrorAI(err.response?.data?.message || 'AI document analysis failed');
+                } finally {
+                  setIsExplaining(false);
+                  e.target.value = '';
+                }
+              }} />
+              <Upload className="w-4 h-4 mr-2 inline" /> Upload & Explain PDF
+            </label>
+          </div>
+        </div>
+
         {loading ? (
           <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-primary-400 animate-spin" /></div>
         ) : (

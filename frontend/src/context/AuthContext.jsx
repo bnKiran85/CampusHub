@@ -76,8 +76,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     sessionStorage.removeItem('token');
     setUser(null);
-    // Use navigate if available, else window.location
-    window.location.href = '/login';
+    // Use navigate if available, else window.location. Prevent infinite loop if already on login.
+    if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+      window.location.href = '/login';
+    }
   };
 
   const updateUser = (updatedUser) => {
